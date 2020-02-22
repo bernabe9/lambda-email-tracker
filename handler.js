@@ -38,14 +38,31 @@ module.exports.handler = async event => {
     }
 
     // notify
-    await axios({
-      url: process.env.WEBHOOK,
-      method: "POST",
-      data: {
-        text: `${params.to} opened the email (ignore if you're writing the email)`
-      },
-      headers: { "Content-Type": "application/json" }
-    });
+    if (process.env.WEBHOOK) {
+      await axios({
+        url: process.env.WEBHOOK,
+        method: "POST",
+        data: {
+          attachments: [
+            {
+              pretext: "Email Track",
+              color: "#36a64f",
+              title: "Email was opened!",
+              text: `Receiver ${params.to} just opened your email`,
+              fields: [
+                {
+                  title: "Note",
+                  value: "Ignore this message if you're writing the email",
+                  short: false
+                }
+              ],
+              ts: Date.now()
+            }
+          ]
+        },
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
     return generateResponse(200, data);
   } catch (e) {
